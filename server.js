@@ -73,7 +73,7 @@ app.put('/todos/:id', function(req, res) {
 		return res.status(400).json({"error": "can't add todo"});
 	}
 
-	if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
 		validAttributes.description = body.description;
 	} else if (body.hasOwnProperty('description')) {
 		return res.status(400).json({"error": "can't add todo"});
