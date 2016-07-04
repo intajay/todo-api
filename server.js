@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
+var db = require('./db.js');
 
 var app = express();
 var server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
@@ -55,17 +56,11 @@ app.get('/todos/:id', function(req, res) {
 app.post('/todos', function(req, res) {
 	body = _.pick(req.body, 'description', 'completed');
 
-	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-		return res.status(400).json({
-			"error": "can't add todo"
-		});
-	}
-
-	body.description = body.description.trim();
-	body.id = todoNextId++;
-	todos.push(body);
-	console.log('Description : ' + body.description);
-	res.json(body);
+	db.todo.create(body).then(function(todo) {
+		res.json(todo.toJSON());
+	}, function(e) {
+		res.status(400).json(e);
+	});
 });
 
 app.delete('/todos/:id', function(req, res) {
@@ -118,6 +113,8 @@ app.put('/todos/:id', function(req, res) {
 	res.json(matchedTodo);
 });
 
-app.listen(server_port, server_ip_address, function() {
-	console.log("Listening on " + server_ip_address + ", server_port " + server_port);
+db.sequelize.sync().then(function() {
+	app.listen(server_port, server_ip_address, function() {
+		console.log("Listening on " + server_ip_address + ", server_port " + server_port);
+	});
 });
