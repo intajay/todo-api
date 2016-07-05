@@ -1,31 +1,18 @@
 var Sequelize = require('sequelize');
-//var env = process.env.OPENSHIFT_ENV_VAR || 'development';
+var env = process.env.NODE_ENV || 'development';
 
-//console.log(process.env.OPENSHIFT_ENV_VAR);
-
-// connection_string = '://127.0.0.1:3000/' + todo;
-// if (process.env.OPENSHIFT_POSTGRESQL_DB_URL) {
-// 	connection_string = process.env.OPENSHIFT_POSTGRESQL_DB_URL + todo;
-// }
-
-var sequelize = new Sequelize('todo', 'adminwhlmkm7', 'dthVplJ6Hqfr', {
-		host: 'localhost',
-		port: 3000,
-		dialect: 'postgresql'
+if (env == 'production') {
+	sequelize = new Sequelize('todo', 'adminmsiau9a', 'EfwkW_LZ3B_2', {
+		host: process.env.OPENSHIFT_POSTGRESQL_DB_HOST || '127.0.0.1',
+		port: process.env.OPENSHIFT_POSTGRESQL_DB_PORT || 3000,
+		dialect: 'postgres'
 	});
-
-// if (env == 'production') {
-// 	sequelize = new Sequelize('todo', 'adminwhlmkm7', 'dthVplJ6Hqfr', {
-// 		host: 'localhost',
-// 		port: 3000,
-// 		dialect: 'postgresql'
-// 	});
-// } else {
-// 	sequelize = new Sequelize(undefined, undefined, undefined, {
-// 		dialect: 'sqlite',
-// 		storage: __dirname + '/data/db.sqlite'
-// 	});
-// }
+} else {
+	sequelize = new Sequelize(undefined, undefined, undefined, {
+		dialect: 'sqlite',
+		storage: __dirname + '/data/db.sqlite'
+	});
+}
 
 var db = {};
 
