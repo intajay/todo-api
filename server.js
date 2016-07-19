@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
+var bcrypt = require('bcryptjs');
 var db = require('./db.js');
 
 var app = express();
@@ -142,7 +143,19 @@ app.post('/users', function(req, res) {
 	});
 });
 
-db.sequelize.sync().then(function() {
+app.post('/users/login', function(req, res) {
+	body = _.pick(req.body, 'email', 'password');
+
+	db.user.authenticate(body).then(function(user) {
+		res.json(user.toPublicJSON());
+	}, function() {
+		res.status(401).send();
+	});
+});
+
+db.sequelize.sync({
+	force: true
+}).then(function() {
 	app.listen(server_port, server_ip_address, function() {
 		console.log("Listening on " + server_ip_address + ", server_port " + server_port);
 	});
