@@ -1,10 +1,9 @@
 var Sequelize = require('sequelize');
 var env = process.env.NODE_ENV || 'development';
+var sequelize;
 
 if (env == 'production') {
-	sequelize = new Sequelize('todo', 'adminmsiau9a', 'EfwkW_LZ3B_2', {
-		host: process.env.OPENSHIFT_POSTGRESQL_DB_HOST || '127.0.0.1',
-		port: process.env.OPENSHIFT_POSTGRESQL_DB_PORT || 3000,
+	sequelize = new Sequelize(process.env.DATABASE_URL, {
 		dialect: 'postgres'
 	});
 } else {
