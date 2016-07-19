@@ -67,7 +67,7 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 });
 
 app.post('/todos', middleware.requireAuthentication, function(req, res) {
-	body = _.pick(req.body, 'description', 'completed');
+	var body = _.pick(req.body, 'description', 'completed');
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
 		return res.status(400).json({
@@ -151,7 +151,7 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 });
 
 app.post('/users', function(req, res) {
-	body = _.pick(req.body, 'email', 'password');
+	var body = _.pick(req.body, 'email', 'password');
 
 	db.user.create(body).then(function(user) {
 		res.json(user.toPublicJSON());
@@ -161,19 +161,29 @@ app.post('/users', function(req, res) {
 });
 
 app.post('/users/login', function(req, res) {
-	body = _.pick(req.body, 'email', 'password');
+	var body = _.pick(req.body, 'email', 'password');
+	var userInstance;
 
 	db.user.authenticate(body).then(function(user) {
 		var token = user.generateToken('authentication');
+		userInstance = user;
 
-		if (token) {
-			res.header('Auth', token).json(user.toPublicJSON());
-		} else {
-			res.status(401).send();
-		}
+		return db.token.create({
+			token: token
+		});
 
-	}, function() {
+	}).then(function(tokenInstance) {
+		res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+	}).catch(function() {
 		res.status(401).send();
+	});
+});
+
+app.delete('/users/login', middleware.requireAuthentication, function(req, res) {
+	req.token.destroy().then(function() {
+		res.status(204).send();
+	}).catch(function() {
+		res.status(500).send();
 	});
 });
 
