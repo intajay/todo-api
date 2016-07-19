@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var _ = require('underscore');
 var bcrypt = require('bcryptjs');
 var db = require('./db.js');
+var middleware = require('./middleware.js')(db);
 
 var app = express();
 var server_port = process.env.PORT || 3000;
@@ -16,7 +17,7 @@ app.get('/', function(req, res) {
 	res.send('Todo app!');
 });
 
-app.get('/todos', function(req, res) {
+app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	var queryParams = req.query;
 	var where = {};
 
@@ -42,7 +43,7 @@ app.get('/todos', function(req, res) {
 	});
 });
 
-app.get('/todos/:id', function(req, res) {
+app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.findById(todoId).then(function(todo) {
@@ -58,7 +59,7 @@ app.get('/todos/:id', function(req, res) {
 	});
 });
 
-app.post('/todos', function(req, res) {
+app.post('/todos', middleware.requireAuthentication, function(req, res) {
 	body = _.pick(req.body, 'description', 'completed');
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -74,7 +75,7 @@ app.post('/todos', function(req, res) {
 	});
 });
 
-app.delete('/todos/:id', function(req, res) {
+app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.destroy({
@@ -94,7 +95,7 @@ app.delete('/todos/:id', function(req, res) {
 	});
 });
 
-app.put('/todos/:id', function(req, res) {
+app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
