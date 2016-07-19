@@ -10,6 +10,7 @@
   "author": "Ajay Meena",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.3.0",
     "body-parser": "^1.13.3",
     "express": "^4.14.0",
     "pg": "^4.4.1",
