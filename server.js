@@ -13,16 +13,20 @@ var todoNextId = 1;
 
 app.use(bodyParser.json());
 
+app.use(function(req, res, next) {
+	res.header('Access-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
+	res.header('Access-Control-Allow-Credentials', true);
+	res.header('Access-Control-Expose-Headers', 'Auth');
+	next();
+});
+
 app.get('/', function(req, res) {
 	res.send('Todo app!');
 });
 
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'GET');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	var queryParams = req.query;
 	var where = {
 		userId: req.user.get('id')
@@ -51,11 +55,6 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 });
 
 app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'GET');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.findOne({
@@ -77,11 +76,6 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 });
 
 app.post('/todos', middleware.requireAuthentication, function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'POST');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	var body = _.pick(req.body, 'description', 'completed');
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -102,11 +96,6 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 });
 
 app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'DELETE');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.destroy({
@@ -128,11 +117,6 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 });
 
 app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'PUT');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	var todoId = parseInt(req.params.id, 10);
 	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
@@ -176,11 +160,6 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 });
 
 app.post('/users', function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'POST');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	var body = _.pick(req.body, 'email', 'password');
 
 	db.user.create(body).then(function(user) {
@@ -191,12 +170,6 @@ app.post('/users', function(req, res) {
 });
 
 app.post('/users/login', function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'POST');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-	res.header('Access-Control-Allow-Credentials', true);
-	res.header('Access-Control-Expose-Headers', 'Auth');
-
 	var body = _.pick(req.body, 'email', 'password');
 	var userInstance;
 
@@ -216,11 +189,6 @@ app.post('/users/login', function(req, res) {
 });
 
 app.delete('/users/login', middleware.requireAuthentication, function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'DELETE');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-
 	req.token.destroy().then(function() {
 		res.status(204).send();
 	}).catch(function() {
