@@ -103,7 +103,9 @@ module.exports = function(sequelize, DataTypes) {
 					var encryptedData = cryptojs.AES.encrypt(stringData, 'password').toString();
 					var token = jwt.sign({
 						token: encryptedData
-					}, 'password123');
+					}, 'password123', {
+						expiresIn: '24h'
+					});
 
 					return token;
 				} catch (e) {
