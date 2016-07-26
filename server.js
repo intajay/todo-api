@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var bcrypt = require('bcryptjs');
+var cors = require('cors');
 var db = require('./db.js');
 var middleware = require('./middleware.js')(db);
 
@@ -13,20 +14,23 @@ var todoNextId = 1;
 
 app.use(bodyParser.json());
 
-app.use(function(req, res, next) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
-	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Auth');
-	res.header('Access-Control-Allow-Credentials', true);
-	res.header('Access-Control-Expose-Headers', 'Auth');
-	next();
-});
-
 app.get('/', function(req, res) {
 	res.send('Todo app!');
 });
 
-app.get('/todos', middleware.requireAuthentication, function(req, res) {
+app.options('/todos', cors({
+	origin: '*',
+	methods: ['GET'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}));
+
+app.get('/todos', cors({
+	origin: '*',
+	methods: ['GET'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}), middleware.requireAuthentication, function(req, res) {
 	var queryParams = req.query;
 	var where = {
 		userId: req.user.get('id')
@@ -54,7 +58,12 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
+app.get('/todos/:id', cors({
+	origin: '*',
+	methods: ['GET'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}), middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.findOne({
@@ -75,7 +84,12 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-app.post('/todos', middleware.requireAuthentication, function(req, res) {
+app.post('/todos', cors({
+	origin: '*',
+	methods: ['POST'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}), middleware.requireAuthentication, function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -95,7 +109,19 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
+app.options('/todos/:id', cors({
+	origin: '*',
+	methods: ['DELETE'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}));
+
+app.delete('/todos/:id', cors({
+	origin: '*',
+	methods: ['DELETE'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}), middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
 	db.todo.destroy({
@@ -116,7 +142,19 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
+app.options('/todos/:id', cors({
+	origin: '*',
+	methods: ['PUT'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}));
+
+app.put('/todos/:id', cors({
+	origin: '*',
+	methods: ['PUT'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}), middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
@@ -159,7 +197,19 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-app.post('/users', function(req, res) {
+app.options('/users', cors({
+	origin: '*',
+	methods: ['POST'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+	credentials: true
+}));
+
+app.post('/users', cors({
+	origin: '*',
+	methods: ['POST'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+	credentials: true
+}), function(req, res) {
 	var body = _.pick(req.body, 'email', 'password');
 
 	db.user.create(body).then(function(user) {
@@ -169,7 +219,13 @@ app.post('/users', function(req, res) {
 	});
 });
 
-app.post('/users/login', function(req, res) {
+app.post('/users/login', cors({
+	origin: '*',
+	methods: ['POST'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+	exposedHeaders: ['Auth'],
+	credentials: true
+}), function(req, res) {
 	var body = _.pick(req.body, 'email', 'password');
 	var userInstance;
 
@@ -188,7 +244,19 @@ app.post('/users/login', function(req, res) {
 	});
 });
 
-app.delete('/users/login', middleware.requireAuthentication, function(req, res) {
+app.options('/users/login', cors({
+	origin: '*',
+	methods: ['DELETE'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}));
+
+app.delete('/users/login', cors({
+	origin: '*',
+	methods: ['DELETE'],
+	allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Auth'],
+	credentials: true
+}), middleware.requireAuthentication, function(req, res) {
 	req.token.destroy().then(function() {
 		res.status(204).send();
 	}).catch(function() {
