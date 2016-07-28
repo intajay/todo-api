@@ -264,9 +264,7 @@ app.delete('/users/login', cors({
 	});
 });
 
-db.sequelize.sync({
-	force: true
-}).then(function() {
+db.sequelize.sync().then(function() {
 	app.listen(server_port, function() {
 		console.log("Listening on server_port " + server_port);
 	});
